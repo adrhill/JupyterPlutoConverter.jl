@@ -1,6 +1,6 @@
-using Jupyter2Pluto
+using JupyterPlutoConverter
 using Test
 
-@testset "Jupyter2Pluto.jl" begin
+@testset "JupyterPlutoConverter.jl" begin
     # Write your tests here.
 end
