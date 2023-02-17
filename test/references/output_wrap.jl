@@ -21,9 +21,9 @@ md"The following code cell is used to test wrapping code in `begin ... end` bloc
 
 # ╔═╡ a3e85500-aed0-11ed-0477-d1d4d742588f
 begin
-	# Code comment
-	bar = 2
-	bar *= 3
+    # Code comment
+    bar = 2
+    bar *= 3
 end
 
 # ╔═╡ Cell order:
