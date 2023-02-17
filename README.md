@@ -23,7 +23,7 @@ using JupyterPlutoConverter
 jupyter2pluto("input.ipynb") # use default output name 
 jupyter2pluto("input.ipynb", "my_pluto_notebook.jl") # use custom output name
 
-# Convert directories of Jupyter notebooks:
+# Convert all Jupyter notebooks in a directory:
 jupyter2pluto(".") # convert all .ipynb files in current directory
 jupyter2pluto(".", recursive=true) # also recursively look through subdirectories
 ```
@@ -31,7 +31,7 @@ jupyter2pluto(".", recursive=true) # also recursively look through subdirectorie
 Several keyword arguments can be specified:
 - `fold_md`: If `true`, Markdown cells are folded, hiding their source. Defaults to `true`.
 - `wrap_block`: If `true`, code cells with multiple lines of code are wrapped in `begin ... end` blocks. Defaults to `false`.
-- `overwrite`: If `true`, file at `output_path` will be overwritten. Defaults to `false`.
+- `overwrite`: If `true`, files at the specified output path will be overwritten. Defaults to `false`.
 - `recursive`: If `true`, applying `jupyter2pluto` to a directory will recursively look for `.ipynb` files in sub-directories. Defaults to `false`.
 - `verbose`: Toggle verbosity. Defaults to `true`.
 

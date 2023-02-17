@@ -14,21 +14,24 @@ DEF_VERBOSE = true
 DEF_RECURSIVE = false
 
 """
-    jupyter2pluto(path, output_path; kwargs...)
+    jupyter2pluto(file)
+    jupyter2pluto(file, output_file)
+    jupyter2pluto(dir)
 
-Convert a Jupyter notebook in `.ipynb`-format at `path` to a Pluto Notebook, saving it at `output_path`.
+Convert a Jupyter notebook `file` in `.ipynb`-format to a Pluto Notebook. A custom output filename can optionally be passed.
+When applied to a directory, `jupyter2pluto` will convert all `.ipynb` files in the directory.
 
 # Optional arguments
 - `fold_md`: If `true`, Markdown cells are folded, hiding their source. Defaults to `true`.
 - `wrap_block`: If `true`, code cells with multiple lines of code are wrapped
     in `begin ... end` blocks. Defaults to `false`.
-- `overwrite`: If `true`, file at `output_path` will be overwritten. Defaults to `false`.
+- `overwrite`: If `true`, files at the output path will be overwritten. Defaults to `false`.
 - `recursive`: If `true`, applying `jupyter2pluto` to a directory will recursively look
     for `.ipynb` files in sub-directories. Defaults to `$DEF_RECURSIVE`.
 - `verbose`: Toggle verbosity. Defaults to `true`.
 """
 function jupyter2pluto(
-    input_file,
+    file,
     output_file;
     fold_md=true,
     wrap_block=false,
@@ -36,14 +39,14 @@ function jupyter2pluto(
     verbose=DEF_VERBOSE,
     recursive=DEF_RECURSIVE,
 )
-    !isfile(input_file) && error("Input $input_file is not a file.")
+    !isfile(file) && error("Input $file is not a file.")
     if !overwrite && isfile(output_file)
-        verbose && println("""Skipping conversion of $input_file since a file already exists at output path $output_file.
+        verbose && println("""Skipping conversion of $file since a file already exists at output path $output_file.
             To overwrite files, call jupyter2pluto with the keyword-argument `overwrite=true`.""")
         return nothing
     end
 
-    jnb = open(JSON.parse, input_file, "r")
+    jnb = open(JSON.parse, file, "r")
     cells = convert_cell_j2p.(jnb["cells"], fold_md, wrap_block)
     pnb = Notebook(cells, output_file, uuid1())
 
