@@ -6,7 +6,7 @@
 
 Another Jupyter notebook to Pluto converter.
 
-By using Pluto's `Notebook` and `Cell` structs, the core functionality of this package is around 30 lines of code. 
+By using Pluto's `Notebook` and `Cell` structs, the core functionality of this package is implemented in around 30 lines of code. 
 
 ## Installation
 This package isn't registered. To install it, open the Julia REPL and run:
@@ -20,23 +20,23 @@ This package currently supports one-way conversions from Jupyter to Pluto. A sin
 using JupyterPlutoConverter
 
 # Convert Jupyter notebooks:
-jupyter2pluto("input.ipynb") # use default output name 
-jupyter2pluto("input.ipynb", "my_pluto_notebook.jl") # use custom output name
+jupyter2pluto("input.ipynb") # use default output filename 
+jupyter2pluto("input.ipynb", "my_pluto_notebook.jl") # use custom output filename
 
 # Convert all Jupyter notebooks in a directory:
-jupyter2pluto(".") # convert all .ipynb files in current directory
-jupyter2pluto(".", recursive=true) # also recursively look through subdirectories
+jupyter2pluto(".") # convert all notebooks in current directory
+jupyter2pluto(".", recursive=true) # recursively look through subdirectories
 ```
 
 Several keyword arguments can be specified:
-- `fold_md`: If `true`, Markdown cells are folded, hiding their source. Defaults to `true`.
-- `wrap_block`: If `true`, code cells with multiple lines of code are wrapped in `begin ... end` blocks. Defaults to `false`.
-- `overwrite`: If `true`, files at the specified output path will be overwritten. Defaults to `false`.
-- `recursive`: If `true`, applying `jupyter2pluto` to a directory will recursively look for `.ipynb` files in sub-directories. Defaults to `false`.
+- `fold_md`: If true, Markdown cells are folded, hiding their source. Defaults to `true`.
+- `wrap_block`: If true, code cells with multiple lines of code are wrapped in `begin ... end` blocks. Defaults to `false`.
+- `overwrite`: If true, files at the specified output path will be overwritten. Defaults to `false`.
+- `recursive`: If true, applying `jupyter2pluto` to a directory will recursively look for Jupyter notebooks in sub-directories. Defaults to `false`.
 - `verbose`: Toggle verbosity. Defaults to `true`.
 
 ## Caveat emptor
-As the [Pluto.jl ⇆ Jupyter conversion notebook](https://observablehq.com/@olivier_plas/pluto-jl-jupyter-conversion) summarizes, automatic conversions from Jupyter to Pluto have caveats:
+As the [Pluto.jl ⇆ Jupyter conversion notebook](https://observablehq.com/@olivier_plas/pluto-jl-jupyter-conversion) summarizes, all automatic conversions from Jupyter to Pluto have caveats:
 
 > Pluto is different from Jupyter in many ways - the conversion will not be perfect. Pluto has restrictions on what kind of code you can write (no multiple definitions, for example), and it can be frustrating to start out with a notebook that contains a lot of these 'reactivity errors'.
 > 
