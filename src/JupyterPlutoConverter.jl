@@ -7,47 +7,85 @@ using Pluto: Cell, Notebook, save_notebook
 export jupyter2pluto
 
 # Jupyter notebooks are big JSON files containing "cells".
-# These cells contain a "cell_type" and "source" content,
-# which is all we define Pluto Cells, which are combined into a Notebook.
+# These cells contain (among other things) a "cell_type" and "source"-content,
+# which is all we need to define Pluto Cells. These are then combined into a Notebook.
+
+DEF_VERBOSE = true
+DEF_RECURSIVE = false
 
 """
-    jupyter2pluto(input_path, output_path; kwargs...)
+    jupyter2pluto(path, output_path; kwargs...)
 
-Convert a Jupyter notebook in `.ipynb`-format at `input_path`
-to a Pluto Notebook, saving it at `output_path`.
-
-**Note:** This currently overwrites the file at `output_path`.
+Convert a Jupyter notebook in `.ipynb`-format at `path` to a Pluto Notebook, saving it at `output_path`.
 
 # Optional arguments
-- `fold_md`: If `true`, Markdown cells are folded, hiding their source.
-    Defaults to `true`.
+- `fold_md`: If `true`, Markdown cells are folded, hiding their source. Defaults to `true`.
 - `wrap_block`: If `true`, code cells with multiple lines of code are wrapped
     in `begin ... end` blocks. Defaults to `false`.
-
+- `overwrite`: If `true`, file at `output_path` will be overwritten. Defaults to `false`.
+- `recursive`: If `true`, applying `jupyter2pluto` to a directory will recursively look
+    for `.ipynb` files in sub-directories. Defaults to `$DEF_RECURSIVE`.
+- `verbose`: Toggle verbosity. Defaults to `true`.
 """
-function jupyter2pluto(input_path, output_path; fold_md=true, wrap_block=false)
-    jnb = open(JSON.parse, input_path, "r")
-    cells = convert_cell_j2p.(jnb["cells"], fold_md, wrap_block)
-    pnb = Notebook(cells, output_path, uuid1())
+function jupyter2pluto(
+    input_file,
+    output_file;
+    fold_md=true,
+    wrap_block=false,
+    overwrite=true,
+    verbose=DEF_VERBOSE,
+    recursive=DEF_RECURSIVE,
+)
+    !isfile(input_file) && error("Input $input_file is not a file.")
+    if !overwrite && isfile(output_file)
+        verbose && println("""Skipping conversion of $input_file since a file already exists at output path $output_file.
+            To overwrite files, call jupyter2pluto with the keyword-argument `overwrite=true`.""")
+        return nothing
+    end
 
-    save_notebook(pnb, output_path)
-    return println("Pluto notebook has been saved to $(output_path).")
+    jnb = open(JSON.parse, input_file, "r")
+    cells = convert_cell_j2p.(jnb["cells"], fold_md, wrap_block)
+    pnb = Notebook(cells, output_file, uuid1())
+
+    save_notebook(pnb, output_file)
+    return verbose && println("Pluto notebook has been saved to $output_file.")
 end
 
 function convert_cell_j2p(cell::Dict, fold_md::Bool, wrap_block::Bool)
     cell_type = get(cell, "cell_type", "cell_type not found")
-    cell_type ∉ ("code", "markdown") && error("Unknown cell type: $(cell_type)")
-
+    cell_type ∉ ("code", "markdown") && error("Unknown cell type: $cell_type")
     source = get(cell, "source", "")
     is_oneliner = length(source) == 1
 
     if cell_type == "code"
         is_oneliner && return Cell(only(source))
-        wrap_block && return Cell("begin\n\t$(join(source, "\t"))\nend")
+        wrap_block && return Cell(join(["begin\n", source...], "    ") * "\nend")
         return Cell(join(source, ""))
     elseif cell_type == "markdown"
         is_oneliner && return Cell(; code="md\"$(only(source))\"", code_folded=fold_md)
         return Cell(; code="md\"\"\"\n$(join(source, ""))\n\"\"\"", code_folded=fold_md)
+    end
+end
+
+#========================#
+# Converting directories #
+#========================#
+function jupyter2pluto(path; recursive=DEF_RECURSIVE, verbose=DEF_VERBOSE, kwargs...)
+    if isdir(path)
+        paths = joinpath.(path, readdir(path))
+        notebooks = filter(f -> (length(f) > 6 && f[(end - 5):end] == ".ipynb"), paths)
+        !isempty(notebooks) && jupyter2pluto.(notebooks; verbose=verbose, kwargs...)
+        if recursive
+            dirs = filter(isdir, paths)
+            !isempty(dirs) &&
+                jupyter2pluto.(dirs; recursive=recursive, verbose=verbose, kwargs...)
+        end
+    end
+    if isfile(path)
+        length(path) <= 6 || path[(end - 5):end] != ".ipynb" &&
+            error("File at $path is not a Jupyter notebook.")
+        output_path = path[1:(end - 6)] * ".jl" # replace .ipynb with .jl
+        jupyter2pluto(path, output_path; verbose=verbose, kwargs...)
     end
 end
 end # module
