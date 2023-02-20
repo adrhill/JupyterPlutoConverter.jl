@@ -4,7 +4,7 @@
 [![Coverage](https://codecov.io/gh/adrhill/JupyterPlutoConverter.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/adrhill/JupyterPlutoConverter.jl)
 
 
-Another Jupyter notebook to Pluto converter.
+Another Jupyter notebook to [Pluto](https://github.com/fonsp/Pluto.jl) converter.
 
 By using Pluto's `Notebook` and `Cell` structs, the core functionality of this package is implemented in around 30 lines of code. 
 
@@ -35,7 +35,7 @@ Several keyword arguments can be specified:
 - `recursive`: If true, applying `jupyter2pluto` to a directory will recursively look for Jupyter notebooks in sub-directories. Defaults to `false`.
 - `verbose`: Toggle verbosity. Defaults to `true`.
 
-## Caveat emptor
+## Caveats
 As the [Pluto.jl ⇆ Jupyter conversion notebook](https://observablehq.com/@olivier_plas/pluto-jl-jupyter-conversion) summarizes, all automatic conversions from Jupyter to Pluto have caveats:
 
 > Pluto is different from Jupyter in many ways - the conversion will not be perfect. Pluto has restrictions on what kind of code you can write (no multiple definitions, for example), and it can be frustrating to start out with a notebook that contains a lot of these 'reactivity errors'.
