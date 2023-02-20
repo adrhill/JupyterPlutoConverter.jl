@@ -39,7 +39,7 @@ function jupyter2pluto(
     verbose=DEF_VERBOSE,
     recursive=DEF_RECURSIVE,
 )
-    !is_ipynb(file) && error("File at $file is not a Jupyter notebook.")
+    !is_ipynb(file) && error_not_ipynb(path)
     if !overwrite && isfile(output_file)
         verbose && println("""Skipping conversion of $file since a file already exists at output path $output_file.
             To overwrite files, call jupyter2pluto with the keyword-argument `overwrite=true`.""")
@@ -71,6 +71,7 @@ function convert_cell_j2p(cell::Dict, fold_md::Bool, wrap_block::Bool)
 end
 
 is_ipynb(path) = isfile(path) && length(path) > 6 && path[end-5:end] == ".ipynb"
+error_not_ipynb(path) = error("File at $path is not a Jupyter notebook.")
 
 #========================#
 # Converting directories #
@@ -87,9 +88,12 @@ function jupyter2pluto(path; recursive=DEF_RECURSIVE, verbose=DEF_VERBOSE, kwarg
         end
     end
     if isfile(path)
-        !is_ipynb(path) && error("File at $path is not a Jupyter notebook.")
-        output_path = path[1:(end - 6)] * ".jl" # replace .ipynb with .jl
-        jupyter2pluto(path, output_path; verbose=verbose, kwargs...)
+        !is_ipynb(path) && error_not_ipynb(path)
+        jupyter2pluto(path, default_output_path(path); verbose=verbose, kwargs...)
     end
+end
+function default_output_path(path) # change ".ipynb" file-ending to ".jl"
+    !is_ipynb(path) && error_not_ipynb(path)
+    return path[1:(end - 6)] * ".jl"
 end
 end # module

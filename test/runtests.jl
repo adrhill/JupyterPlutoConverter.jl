@@ -37,13 +37,18 @@ end
         # File that should be written:
         out_path = joinpath(@__DIR__, "references", "input.jl")
         for (test_name, kwargs) in test_cases
-            @testset "$(test_name)" begin
+            @testset "Recursive $(test_name)" begin
                 jupyter2pluto("."; recursive=true, kwargs...)
                 @test isfile(out_path)
                 ref_path = joinpath(ref_folder, "output_$(test_name).jl")
                 @test notebooks_are_equal(out_path, ref_path)
                 rm(out_path)
             end
+        end
+        @testset "Non-recursive" begin
+            jupyter2pluto("."; recursive=false)
+            @test !isfile(out_path)
+            isfile(out_path) && rm(out_path)
         end
     end
     @testset "Error cases" begin

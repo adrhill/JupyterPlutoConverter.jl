@@ -15,16 +15,16 @@ julia> ]add https://github.com/adrhill/JupyterPlutoConverter.jl
 ```
 
 ## Getting started
-This package currently supports one-way conversions from Jupyter to Pluto. A single function is exported:
+This package currently supports one-way conversions from Jupyter to Pluto. A single function `jupyter2pluto` is exported:
 ```julia
 using JupyterPlutoConverter
 
-# Convert Jupyter notebooks:
-jupyter2pluto("input.ipynb") # use default output filename 
-jupyter2pluto("input.ipynb", "my_pluto_notebook.jl") # use custom output filename
+# Convert notebook:
+jupyter2pluto("notebook.ipynb") # use default output filename "notebook.jl"
+jupyter2pluto("notebook.ipynb", "my_pluto_notebook.jl") # use custom output filename
 
-# Convert all Jupyter notebooks in a directory:
-jupyter2pluto(".") # convert all notebooks in current directory
+# Convert directory:
+jupyter2pluto(".") # convert all Jupyter notebooks in current directory
 jupyter2pluto(".", recursive=true) # recursively look through subdirectories
 ```
 
