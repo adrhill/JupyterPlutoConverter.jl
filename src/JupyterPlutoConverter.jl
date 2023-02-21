@@ -13,7 +13,7 @@ export jupyter2pluto
 # Keyword argument defaults
 const DEF_FOLD_MD = true
 const DEF_WRAP_BLOCK = false
-const DEF_OVERWRITE = true
+const DEF_OVERWRITE = false
 const DEF_VERBOSE = true
 const DEF_RECURSIVE = false
 
@@ -81,21 +81,21 @@ error_not_ipynb(path) = error("File at $path is not a Jupyter notebook.")
 #========================#
 # Converting directories #
 #========================#
-function jupyter2pluto(path; recursive=DEF_RECURSIVE, verbose=DEF_VERBOSE, kwargs...)
+function jupyter2pluto(path; recursive=DEF_RECURSIVE, kwargs...)
     if isdir(path)
         paths = joinpath.(path, readdir(path))
         notebooks = filter(is_ipynb, paths)
-        !isempty(notebooks) && jupyter2pluto.(notebooks; verbose=verbose, kwargs...)
+        !isempty(notebooks) && jupyter2pluto.(notebooks; kwargs...)
         if recursive
             dirs = filter(isdir, paths)
             if !isempty(dirs)
-                jupyter2pluto.(dirs; recursive=recursive, verbose=verbose, kwargs...)
+                jupyter2pluto.(dirs; recursive=recursive, kwargs...)
             end
         end
     end
     if isfile(path)
         !is_ipynb(path) && error_not_ipynb(path)
-        jupyter2pluto(path, default_output_path(path); verbose=verbose, kwargs...)
+        jupyter2pluto(path, default_output_path(path); kwargs...)
     end
 end
 function default_output_path(path) # change ".ipynb" file-ending to ".jl"
