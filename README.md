@@ -9,9 +9,9 @@ Another Jupyter notebook to [Pluto](https://github.com/fonsp/Pluto.jl) converter
 By using Pluto's `Notebook` and `Cell` structs, the core functionality of this package is implemented in around 30 lines of code. 
 
 ## Installation
-This package isn't registered. To install it, open the Julia REPL and run:
+To install this package, open the Julia REPL and run:
 ```julia
-julia> ]add https://github.com/adrhill/JupyterPlutoConverter.jl
+julia> ]add JupyterPlutoConverter
 ```
 
 ## Getting started
