@@ -27,28 +27,45 @@ end
                 # that will be deleted at the end of the test
                 tmp_path = joinpath(ref_folder, "_tmp_$(test_name).jl")
                 ref_path = joinpath(ref_folder, "output_$(test_name).jl")
-                jupyter2pluto(input_path, tmp_path; kwargs...)
+                @test_logs (:info,) jupyter2pluto(input_path, tmp_path; kwargs...)
                 @test notebooks_are_equal(tmp_path, ref_path)
                 rm(tmp_path)
             end
         end
     end
+    @testset "Overwrite protection" begin
+        output_path = joinpath(ref_folder, "dummy_file.jl")
+        file_content = "Lorem ipsum"
+        open(output_path, "w") do io
+            write(io, file_content)
+        end
+        # These two calls will run into overwrite protection:
+        @test_logs (:warn,) jupyter2pluto(input_path, output_path; overwrite=false)
+        @test only(readlines(output_path)) == file_content
+        @test_logs (:warn,) jupyter2pluto(input_path, output_path) # overwrite=false is default
+        @test only(readlines(output_path)) == file_content
+        # # This will overwrite the file:
+        @test_logs (:info,) jupyter2pluto(input_path, output_path; overwrite=true)
+        @test notebooks_are_equal(output_path, joinpath(ref_folder, "output_default.jl"))
+        rm(output_path)
+    end
     @testset "Directories" begin
         # File that should be written:
-        out_path = joinpath(@__DIR__, "references", "input.jl")
+        output_path = joinpath(@__DIR__, "references", "input.jl")
         for (test_name, kwargs) in test_cases
             @testset "Recursive $(test_name)" begin
-                jupyter2pluto("."; recursive=true, kwargs...)
-                @test isfile(out_path)
+                @test_logs (:info,) jupyter2pluto("."; recursive=true, kwargs...)
+                @test isfile(output_path)
                 ref_path = joinpath(ref_folder, "output_$(test_name).jl")
-                @test notebooks_are_equal(out_path, ref_path)
-                rm(out_path)
+                @test notebooks_are_equal(output_path, ref_path)
+                rm(output_path)
             end
         end
         @testset "Non-recursive" begin
             jupyter2pluto("."; recursive=false)
-            @test !isfile(out_path)
-            isfile(out_path) && rm(out_path)
+            @test !isfile(output_path)
+            # If something went wrong and file got created, delete it
+            isfile(output_path) && rm(output_path)
         end
     end
     @testset "Error cases" begin

@@ -45,9 +45,9 @@ function jupyter2pluto(
 )
     !is_ipynb(path) && error_not_ipynb(path)
     if !overwrite && isfile(output_path)
-        verbose && println("""Skipping conversion of $path since a file already exists at output path $output_path.
-            To overwrite files, call jupyter2pluto with the keyword-argument `overwrite=true`.""",
-        )
+        verbose && @warn """Skipping conversion of $path:
+            A file already exists at output path $output_path.
+            To overwrite files, call jupyter2pluto with the keyword argument overwrite=true."""
         return nothing
     end
 
@@ -56,7 +56,7 @@ function jupyter2pluto(
     pnb = Notebook(cells, output_path, uuid1())
 
     save_notebook(pnb, output_path)
-    return verbose && println("Pluto notebook has been saved to $output_path.")
+    return verbose && @info "Pluto notebook has been saved to $output_path."
 end
 
 function convert_cell(cell::Dict, fold_md::Bool, wrap_block::Bool)
