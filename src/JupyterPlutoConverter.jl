@@ -43,7 +43,8 @@ function jupyter2pluto(
     verbose=DEF_VERBOSE,
     recursive=DEF_RECURSIVE,
 )
-    !is_ipynb(path) && error_not_ipynb(path)
+    !is_ipynb(path) && error_not_ipynb()
+    !endswith(output_path, ".jl") && error("File extension of output_path must be .jl.")
     if !overwrite && isfile(output_path)
         verbose && @warn """Skipping conversion of $path:
             A file already exists at output path $output_path.
@@ -56,7 +57,8 @@ function jupyter2pluto(
     pnb = Notebook(cells, output_path, uuid1())
 
     save_notebook(pnb, output_path)
-    return verbose && @info "Pluto notebook has been saved to $output_path."
+    verbose && @info "Pluto notebook has been saved to $output_path."
+    return nothing
 end
 
 function convert_cell(cell::Dict, fold_md::Bool, wrap_block::Bool)
@@ -75,31 +77,37 @@ function convert_cell(cell::Dict, fold_md::Bool, wrap_block::Bool)
     end
 end
 
-is_ipynb(path) = isfile(path) && length(path) > 6 && path[(end - 5):end] == ".ipynb"
-error_not_ipynb(path) = error("File at $path is not a Jupyter notebook.")
+is_ipynb(path) = isfile(path) && endswith(path, ".ipynb")
+error_not_ipynb() = error("File extension of Jupyter notebook must be .ipynb.")
 
-#========================#
-# Converting directories #
-#========================#
+#===================#
+# Convert directory #
+#===================#
+
 function jupyter2pluto(path; recursive=DEF_RECURSIVE, kwargs...)
-    if isdir(path)
-        paths = joinpath.(path, readdir(path))
-        notebooks = filter(is_ipynb, paths)
-        !isempty(notebooks) && jupyter2pluto.(notebooks; kwargs...)
-        if recursive
-            dirs = filter(isdir, paths)
-            if !isempty(dirs)
-                jupyter2pluto.(dirs; recursive=recursive, kwargs...)
-            end
-        end
-    end
+    notebooks = String[]
     if isfile(path)
-        !is_ipynb(path) && error_not_ipynb(path)
-        jupyter2pluto(path, default_output_path(path); kwargs...)
+        !is_ipynb(path) && error_not_ipynb()
+        push!(notebooks, path)
+    elseif isdir(path)
+        if recursive
+            for (root, _dirs, files) in walkdir(path)
+                paths = joinpath.(root, files)
+                append!(notebooks, filter(is_ipynb, paths))
+            end
+        else # not recursive
+            paths = readdir(path; join=true)
+            append!(notebooks, filter(is_ipynb, paths))
+        end
+    else
+        error("$path must be a Jupyter notebook or a directory.")
     end
-end
-function default_output_path(path) # change ".ipynb" file-ending to ".jl"
-    !is_ipynb(path) && error_not_ipynb(path)
-    return path[1:(end - 6)] * ".jl"
+
+    isempty(notebooks) && @warn("No Jupyter notebooks found in directory $path.")
+    for input_path in notebooks
+        output_path = replace(input_path, ".ipynb" => ".jl")
+        jupyter2pluto(input_path, output_path; kwargs...)
+    end
+    return nothing
 end
 end # module

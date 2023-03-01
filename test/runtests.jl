@@ -52,17 +52,19 @@ end
     @testset "Directories" begin
         # File that should be written:
         output_path = joinpath(@__DIR__, "references", "input.jl")
-        for (test_name, kwargs) in test_cases
-            @testset "Recursive $(test_name)" begin
-                @test_logs (:info,) jupyter2pluto("."; recursive=true, kwargs...)
-                @test isfile(output_path)
-                ref_path = joinpath(ref_folder, "output_$(test_name).jl")
-                @test notebooks_are_equal(output_path, ref_path)
-                rm(output_path)
+        @testset "Recursive" begin
+            for (test_name, kwargs) in test_cases
+                @testset "$test_name" begin
+                    @test_logs (:info,) jupyter2pluto("."; recursive=true, kwargs...)
+                    @test isfile(output_path)
+                    ref_path = joinpath(ref_folder, "output_$(test_name).jl")
+                    @test notebooks_are_equal(output_path, ref_path)
+                    rm(output_path)
+                end
             end
         end
         @testset "Non-recursive" begin
-            jupyter2pluto("."; recursive=false)
+            @test_logs (:warn,) jupyter2pluto("."; recursive=false)
             @test !isfile(output_path)
             # If something went wrong and file got created, delete it
             isfile(output_path) && rm(output_path)
