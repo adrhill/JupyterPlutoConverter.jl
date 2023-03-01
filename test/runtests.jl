@@ -85,6 +85,7 @@ end
     end
 
     @testset "Error cases" begin
-        @test_throws ErrorException jupyter2pluto("runtests.jl")
+        @test_throws ErrorException jupyter2pluto("runtests.jl") # not .ipynb
+        @test_throws ErrorException jupyter2pluto("foo.ipynb") # doesn't exist
     end
 end
