@@ -33,15 +33,19 @@ If `path` is a directory, `jupyter2pluto` will convert all `.ipynb` files in the
 - `recursive`: If `true`, applying `jupyter2pluto` to a directory will recursively look
     for `.ipynb` files in sub-directories. Defaults to `$DEF_RECURSIVE`.
 - `verbose`: Toggle verbosity. Defaults to `$DEF_VERBOSE`.
+- `transform_code`: Transformation applied to code strings. Defaults to `identity`.
+- `transform_md`: Transformation applied to Markdown strings. Defaults to `identity`.
 """
 function jupyter2pluto(
     path,
     output_path;
-    fold_md=DEF_FOLD_MD,
-    wrap_block=DEF_WRAP_BLOCK,
-    overwrite=DEF_OVERWRITE,
-    verbose=DEF_VERBOSE,
-    recursive=DEF_RECURSIVE,
+    fold_md::Bool=DEF_FOLD_MD,
+    wrap_block::Bool=DEF_WRAP_BLOCK,
+    overwrite::Bool=DEF_OVERWRITE,
+    verbose::Bool=DEF_VERBOSE,
+    recursive::Bool=DEF_RECURSIVE,
+    transform_code::Function=identity,
+    transform_md::Function=identity,
 )
     !is_ipynb(path) && error_not_ipynb()
     !endswith(output_path, ".jl") && error("File extension of output_path must be .jl.")
@@ -53,7 +57,7 @@ function jupyter2pluto(
     end
 
     jnb = open(JSON.parse, path, "r")
-    cells = convert_cell.(jnb["cells"], fold_md, wrap_block)
+    cells = convert_cell.(jnb["cells"], fold_md, wrap_block, transform_code, transform_md)
     pnb = Notebook(cells, output_path, uuid1())
 
     save_notebook(pnb, output_path)
@@ -61,19 +65,33 @@ function jupyter2pluto(
     return nothing
 end
 
-function convert_cell(cell::Dict, fold_md::Bool, wrap_block::Bool)
+function convert_cell(
+    cell::Dict,
+    fold_md::Bool,
+    wrap_block::Bool,
+    transform_code::Function,
+    transform_md::Function,
+)
     cell_type = get(cell, "cell_type", "cell_type not found")
     cell_type ∉ ("code", "markdown") && error("Unknown cell type: $cell_type")
     source = get(cell, "source", "")
-    is_oneliner = length(source) == 1
 
     if cell_type == "code"
-        is_oneliner && return Cell(only(source))
-        wrap_block && return Cell(join(["begin\n", source...], "    ") * "\nend")
-        return Cell(join(source, ""))
+        code = if length(source) == 1
+            only(source)
+        elseif wrap_block
+            join(["begin\n", source..., "end"], "    ", "\n")
+        else
+            join(source, "")
+        end
+        return Cell(transform_code(code))
     elseif cell_type == "markdown"
-        is_oneliner && return Cell(; code="md\"$(only(source))\"", code_folded=fold_md)
-        return Cell(; code="md\"\"\"\n$(join(source, ""))\n\"\"\"", code_folded=fold_md)
+        md = if length(source) == 1
+            "md\"$(only(source))\""
+        else
+            "md\"\"\"\n$(join(source, ""))\n\"\"\""
+        end
+        return Cell(; code=transform_md(md), code_folded=fold_md)
     end
 end
 
