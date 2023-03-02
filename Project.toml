@@ -1,7 +1,7 @@
 name = "JupyterPlutoConverter"
 uuid = "1eb89384-759d-4e70-b7ef-f01bc3213651"
 authors = ["Adrian Hill <adrian.hill@mailbox.org>"]
-version = "0.1.0"
+version = "0.1.1"
 
 [deps]
 JSON = "682c06a0-de6a-54ab-a142-c8b1cf79cde6"
