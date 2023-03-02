@@ -15,9 +15,13 @@ end
 
     # Run tests with different keyword arguments
     test_cases = Dict(
-        :default => (fold_md=true, wrap_block=false),
-        :wrap => (fold_md=true, wrap_block=true),
-        :no_fold => (fold_md=false, wrap_block=false),
+        :default => (),
+        :wrap => (wrap_block=true,),
+        :no_fold => (fold_md=false,),
+        :transforms => (
+            transform_code=code -> replace(code, "bar" => "qux"),
+            transform_md=md -> replace(md, "x" => "y"),
+        ),
     )
 
     @testset "Files" begin

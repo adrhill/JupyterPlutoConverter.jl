@@ -30,13 +30,15 @@ jupyter2pluto(".", recursive=true) # recursively look through subdirectories
 
 The following keyword arguments can be specified:
 
-| Name         | Default | Description                                                                                                      |
-|:-------------|:--------|:-----------------------------------------------------------------------------------------------------------------|
-| `fold_md`    | `true`  | If true, Markdown cells are folded, hiding their source.                                                         |
-| `wrap_block` | `false` | If true, code cells with multiple lines of code are wrapped in `begin ... end` blocks.                           |
-| `overwrite`  | `false` | If true, files at the specified output path will be overwritten.                                                 |
-| `recursive`  | `false` | If true, applying `jupyter2pluto` to a directory will recursively look for Jupyter notebooks in sub-directories. |
-| `verbose`    | `true`  | Toggle verbosity.                                                                                                |
+| Name             | Default    | Description                                                                                                      |
+|:-----------------|:-----------|:-----------------------------------------------------------------------------------------------------------------|
+| `fold_md`        | `true`     | If true, Markdown cells are folded, hiding their source.                                                         |
+| `wrap_block`     | `false`    | If true, code cells with multiple lines of code are wrapped in `begin ... end` blocks.                           |
+| `overwrite`      | `false`    | If true, files at the specified output path will be overwritten.                                                 |
+| `recursive`      | `false`    | If true, applying `jupyter2pluto` to a directory will recursively look for Jupyter notebooks in sub-directories. |
+| `verbose`        | `true`     | Toggle verbosity.                                                                                                |
+| `transform_code` | `identity` | Transformation applied to code cells. Has to be a function that maps strings to strings.                         |
+| `transform_md`   | `identity` | Transformation applied to Markdown cells. Has to be a function that maps strings to strings.                     |
 
 ## Caveats
 As the [Pluto.jl ⇆ Jupyter conversion notebook][obs-conv-url] summarizes,
