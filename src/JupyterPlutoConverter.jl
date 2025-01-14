@@ -70,7 +70,7 @@ function jupyter2pluto(
     return nothing
 end
 
-_wrap_if_single(vs::String) = [vs]
+_wrap_if_single(vs::AbstractString) = [vs]
 _wrap_if_single(vs) = vs
 
 function convert_cell(
