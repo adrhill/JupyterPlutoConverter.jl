@@ -48,7 +48,9 @@ function jupyter2pluto(
     transform_md::Function=identity,
 )
     !is_ipynb(path) && error_not_ipynb()
-    !endswith(output_path, ".jl") && error("File extension of output_path must be .jl.")
+    if splitext(output_path)[2] ∈ ("", ".", ".ipynb")
+        error("File extension of output_path must be .jl or something similar.")
+    end
     if !overwrite && isfile(output_path)
         verbose && @warn """Skipping conversion of $path:
             A file already exists at output path $output_path.
