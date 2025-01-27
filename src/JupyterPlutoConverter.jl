@@ -17,6 +17,9 @@ const DEF_OVERWRITE = false
 const DEF_VERBOSE = true
 const DEF_RECURSIVE = false
 
+
+const flatmap = collect ∘ Iterators.flatmap
+
 """
     jupyter2pluto(path)
     jupyter2pluto(path, output_path)
@@ -59,7 +62,9 @@ function jupyter2pluto(
     end
 
     jnb = open(JSON.parse, path, "r")
-    cells = convert_cell.(jnb["cells"], fold_md, wrap_block, transform_code, transform_md)
+    cells = flatmap(jnb["cells"]) do cell
+        convert_cell(cell; fold_md, wrap_block, transform_code, transform_md)
+    end
     pnb = Notebook(cells, output_path, uuid1())
 
     save_notebook(pnb, output_path)
@@ -67,8 +72,11 @@ function jupyter2pluto(
     return nothing
 end
 
+_wrap_if_single(vs::AbstractString) = [vs]
+_wrap_if_single(vs) = vs
+
 function convert_cell(
-    cell::Dict,
+    cell::Dict;
     fold_md::Bool,
     wrap_block::Bool,
     transform_code::Function,
@@ -86,14 +94,15 @@ function convert_cell(
         else
             join(source, "")
         end
-        return Cell(transform_code(code))
+        
+        return (Cell(s) for s in _wrap_if_single(transform_code(code)))
     elseif cell_type == "markdown"
         md = if length(source) == 1
             "md\"$(only(source))\""
         else
             "md\"\"\"\n$(join(source, ""))\n\"\"\""
         end
-        return Cell(; code=transform_md(md), code_folded=fold_md)
+        return (Cell(; code=s, code_folded=fold_md) for s in _wrap_if_single(transform_md(md)))
     end
 end
 
