@@ -22,6 +22,10 @@ end
             transform_code=code -> replace(code, "bar" => "qux"),
             transform_md=md -> replace(md, "x" => "y"),
         ),
+        :split_cells => (
+            # Test multiple strings: duplicate the foo cell, remove the qux cell
+            transform_code=code -> occursin("foo", code) ? [code, code] : [],
+        ),
     )
 
     @testset "Files" begin
